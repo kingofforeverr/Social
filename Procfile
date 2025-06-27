@@ -1,1 +1,1 @@
-web: gunicorn DuAnNhom.wsgi
+web: daphne DuAnNhom.asgi:application
