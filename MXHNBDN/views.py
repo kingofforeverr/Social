@@ -448,7 +448,7 @@ def trang_chu(request):
         'binh_chon_list': binh_chon_list,
     }
 
-    return render(request, 'TrangChu.html', context)
+    return render(request, 'Trangchu.html', context)
 
 
 @login_required
