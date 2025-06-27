@@ -372,7 +372,7 @@
                         <i data-lucide="help-circle" class="nav-icon"></i><span>Hỏi đáp</span>
                     </a></li>
                     <li><a href="{% url 'profile_view' %}"
-                           class="nav-item {% if request.resolver_match.url_name == 'profile_detail' %}active{% endif %}">
+                           class="nav-item {% if request.resolver_match.url_name == 'profile_view' %}active{% endif %}">
                         <i data-lucide="user" class="nav-icon"></i><span>Hồ sơ</span>
                     </a></li>
                     <li><a href="{% url 'tao_binh_chon' %}"
