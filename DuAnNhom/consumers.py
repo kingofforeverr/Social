@@ -91,9 +91,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.contrib.auth.models import User
-from django.utils import timezone
-from MXHNBDN.models import CuocTroChuyen, TinNhanChiTiet
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -173,6 +171,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def is_room_participant(self, room_id, user_id):
+        from MXHNBDN.models import CuocTroChuyen
         try:
             room = CuocTroChuyen.objects.get(id=room_id)
             return room.ThanhVien.filter(id=user_id).exists()
@@ -181,6 +180,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, room_id, user_id, content, attachment_id=None, image_id=None):
+        from django.contrib.auth.models import User
+        from django.utils import timezone
+        from MXHNBDN.models import CuocTroChuyen, TinNhanChiTiet
         room = CuocTroChuyen.objects.get(id=room_id)
         user = User.objects.get(id=user_id)
 
