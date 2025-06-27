@@ -358,7 +358,7 @@ def ProfileDetail(request):
     # Chọn tab
     tab = request.GET.get('tab', 'baiviet')
 
-    return render(request, 'Edit_profile/edit_profile.html', {
+    return render(request, 'Edit_Profile/profile_details.html', {
         'nguoi_dung': nguoi_dung,
         'bai_viet_list': bai_viet_list,
         'binh_chon_list': binh_chon_list,
