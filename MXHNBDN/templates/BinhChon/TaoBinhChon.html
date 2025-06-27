@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tạo Bình Chọn{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-icon {
+        background-color: var(--primary);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+    }
+
+    .card-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--dark-text);
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--dark-text);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(88, 88, 250, 0.2);
+    }
+
+    .input-group {
+        position: relative;
+        display: flex;
+    }
+
+    .input-group-text {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--light-text);
+        background: none;
+        border: none;
+        pointer-events: none;
+    }
+
+    .option-container {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    .remove-option {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--light-text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+    }
+
+    .remove-option:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+
+    .add-option-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--primary);
+        background: none;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .add-option-btn:hover {
+        color: var(--primary-dark);
+    }
+
+    .phong-ban-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .phong-ban-display {
+        cursor: pointer;
+    }
+
+    .phong-ban-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+    }
+
+    .phong-ban-item input {
+        margin-right: 10px;
+    }
+
+    .selected-phong-ban {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .selected-phong-ban-item {
+        background-color: var(--secondary);
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .remove-phong-ban {
+        margin-left: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .error-message {
+        color: #e53935;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .required {
+        color: #e53935;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Bình chọn</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="card-title">Tạo bình chọn</div>
+        </div>
+        <div class="card-body">
+            <form method="post" id="binh-chon-form">
+                {% csrf_token %}
+
+                <!-- Tiêu đề -->
+                <div class="form-group">
+                    <label for="{{ form.TenTieuDe.id_for_label }}" class="form-label">
+                        {{ form.TenTieuDe.label }} <span class="required">*</span>
+                    </label>
+                    {{ form.TenTieuDe }}
+                    {% if form.TenTieuDe.errors %}
+                        <div class="error-message">{{ form.TenTieuDe.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Thời gian kết thúc -->
+                <div class="form-group">
+                    <label for="{{ form.ThoiGianKetThucBC.id_for_label }}" class="form-label">
+                        {{ form.ThoiGianKetThucBC.label }} <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        {{ form.ThoiGianKetThucBC }}
+                        <div class="input-group-text">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                        </div>
+                    </div>
+                    {% if form.ThoiGianKetThucBC.errors %}
+                        <div class="error-message">{{ form.ThoiGianKetThucBC.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Lựa chọn bình chọn -->
+                <div class="form-group">
+                    <label class="form-label">Lựa chọn <span class="required">*</span></label>
+                    {{ formset.management_form }}
+
+                    <div id="options-container">
+                        {% for form in formset %}
+                            <div class="option-container">
+                                {{ form.id }}
+                                <div class="input-group">
+                                    {{ form.noi_dung }}
+                                    {% if forloop.counter > 2 %}
+                                        <button type="button" class="remove-option">
+                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                {% if form.noi_dung.errors %}
+                                    <div class="error-message">{{ form.noi_dung.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" id="add-option" class="add-option-btn">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Thêm lựa chọn
+                    </button>
+
+                    <div id="options-error" class="error-message" style="display: none;">
+                        Vui lòng nhập ít nhất 2 lựa chọn
+                    </div>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="form-group">
+                    <label for="{{ form.MoTa.id_for_label }}" class="form-label">
+                        {{ form.MoTa.label }}
+                    </label>
+                    {{ form.MoTa }}
+                    {% if form.MoTa.errors %}
+                        <div class="error-message">{{ form.MoTa.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Phòng ban -->
+                <div class="form-group">
+                    <label class="form-label">Phòng ban <span class="required">*</span></label>
+                    <div class="input-group">
+                        <input type="text" id="phong-ban-display" class="form-control phong-ban-display" placeholder="Chọn phòng ban" readonly>
+                    </div>
+
+                    <div class="phong-ban-container" id="phong-ban-container">
+                        {% for phong_ban in phong_bans %}
+                            <div class="phong-ban-item">
+                                <input type="checkbox" name="phong_ban" value="{{ phong_ban.id }}" id="phong-ban-{{ phong_ban.id }}" class="phong-ban-checkbox">
+                                <label for="phong-ban-{{ phong_ban.id }}">{{ phong_ban.TenPhong }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="selected-phong-ban" id="selected-phong-ban"></div>
+
+                    <div id="phong-ban-error" class="error-message" style="display: none;">
+                        Vui lòng chọn ít nhất một phòng ban
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn-primary">Đăng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý hiển thị/ẩn phòng ban
+        document.getElementById('phong-ban-display').addEventListener('click', function() {
+            document.getElementById('phong-ban-container').style.display =
+                document.getElementById('phong-ban-container').style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Xử lý chọn phòng ban
+        const phongBanCheckboxes = document.querySelectorAll('.phong-ban-checkbox');
+        phongBanCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateSelectedPhongBan);
+        });
+
+        // Cập nhật hiển thị phòng ban đã chọn
+        function updateSelectedPhongBan() {
+            const selectedContainer = document.getElementById('selected-phong-ban');
+            selectedContainer.innerHTML = '';
+
+            let selectedCount = 0;
+            phongBanCheckboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    const id = checkbox.value;
+                    const name = document.querySelector(`label[for="phong-ban-${id}"]`).textContent;
+                    selectedCount++;
+
+                    const item = document.createElement('div');
+                    item.className = 'selected-phong-ban-item';
+                    item.innerHTML = name +
+                        `<span class="remove-phong-ban" data-id="${id}">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                        </span>`;
+
+                    selectedContainer.appendChild(item);
+                }
+            });
+
+            // Cập nhật text hiển thị
+            if (selectedCount > 0) {
+                document.getElementById('phong-ban-display').value = selectedCount + ' phòng ban đã chọn';
+                document.getElementById('phong-ban-error').style.display = 'none';
+            } else {
+                document.getElementById('phong-ban-display').value = '';
+                document.getElementById('phong-ban-error').style.display = 'block';
+            }
+
+            // Tạo lại icons
+            lucide.createIcons();
+        }
+
+        // Xử lý xóa phòng ban đã chọn
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-phong-ban')) {
+                const id = e.target.closest('.remove-phong-ban').dataset.id;
+                document.getElementById(`phong-ban-${id}`).checked = false;
+                updateSelectedPhongBan();
+            }
+        });
+
+        // Xử lý thêm lựa chọn
+        document.getElementById('add-option').addEventListener('click', function() {
+            const optionsContainer = document.getElementById('options-container');
+            const totalForms = document.getElementById('id_luachonbinhchon_set-TOTAL_FORMS');
+            const formCount = parseInt(totalForms.value);
+
+            // Clone form cuối cùng
+            const lastForm = optionsContainer.lastElementChild;
+            const newForm = lastForm.cloneNode(true);
+
+            // Cập nhật ID và name
+            const inputs = newForm.querySelectorAll('input');
+            inputs.forEach(function(input) {
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(`-${formCount-1}-`, `-${formCount}-`);
+                    input.setAttribute('name', newName);
+                    input.setAttribute('id', `id_${newName}`);
+                    input.value = '';
+                }
+            });
+
+            // Thêm nút xóa nếu chưa có
+            if (!newForm.querySelector('.remove-option')) {
+                const inputGroup = newForm.querySelector('.input-group');
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'remove-option';
+                removeButton.innerHTML = '<i data-lucide="x" style="width: 16px; height: 16px;"></i>';
+                inputGroup.appendChild(removeButton);
+            }
+
+            // Thêm form mới
+            optionsContainer.appendChild(newForm);
+
+            // Cập nhật số lượng form
+            totalForms.value = formCount + 1;
+
+            // Tạo lại icons
+            lucide.createIcons();
+        });
+
+        // Xử lý xóa lựa chọn
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-option')) {
+                const optionContainer = e.target.closest('.option-container');
+                const totalForms = document.getElementById('id_luachonbinhchon_set-TOTAL_FORMS');
+                const formCount = parseInt(totalForms.value);
+
+                // Nếu có ít nhất 3 lựa chọn, cho phép xóa
+                if (formCount > 2) {
+                    optionContainer.remove();
+
+                    // Cập nhật lại index của các form sau form bị xóa
+                    const optionContainers = document.querySelectorAll('#options-container .option-container');
+                    optionContainers.forEach(function(container, index) {
+                        const inputs = container.querySelectorAll('input');
+                        inputs.forEach(function(input) {
+                            const name = input.getAttribute('name');
+                            if (name) {
+                                const newName = name.replace(/-\d+-/, `-${index}-`);
+                                input.setAttribute('name', newName);
+                                input.setAttribute('id', `id_${newName}`);
+                            }
+                        });
+                    });
+
+                    // Cập nhật số lượng form
+                    totalForms.value = formCount - 1;
+                }
+            }
+        });
+
+        // Validate form trước khi submit
+        document.getElementById('binh-chon-form').addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Kiểm tra phòng ban
+            if (document.querySelectorAll('.phong-ban-checkbox:checked').length === 0) {
+                document.getElementById('phong-ban-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('phong-ban-error').style.display = 'none';
+            }
+
+            // Kiểm tra lựa chọn
+            let validOptions = 0;
+            document.querySelectorAll('#options-container input[type="text"]').forEach(function(input) {
+                if (input.value.trim() !== '') {
+                    validOptions++;
+                }
+            });
+
+            if (validOptions < 2) {
+                document.getElementById('options-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('options-error').style.display = 'none';
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Khởi tạo ban đầu
+        updateSelectedPhongBan();
+    });
+</script>
+{% endblock %}

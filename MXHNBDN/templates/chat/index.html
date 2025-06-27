@@ -1,0 +1,1074 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ứng dụng Chat{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Override base template styles to prevent scrolling */
+    body {
+        overflow: hidden !important;
+    }
+
+    .app-container {
+        overflow: hidden !important;
+    }
+
+    /* Add to your existing CSS */
+.attachment-buttons {
+    display: flex;
+    margin-right: 8px;
+    gap:10px;
+}
+
+.attachment-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    color: #6b7280;
+    transition: background-color 0.2s;
+}
+
+.attachment-btn:hover {
+    background-color: #f3f4f6;
+    color: #3b82f6;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.attachment-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    background-color: #f9fafb;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    font-size: 12px;
+}
+
+.attachment-item svg {
+    margin-right: 4px;
+}
+
+.attachment-item .remove-btn {
+    margin-left: 4px;
+    cursor: pointer;
+    color: #ef4444;
+}
+
+.message-attachment {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.message-attachment a {
+    display: flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: underline;
+}
+
+.message-attachment svg {
+    margin-right: 4px;
+}
+
+.message-image {
+    margin-top: 8px;
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+.chat-input {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: white;
+    flex-shrink: 0;
+}
+
+    .main-content {
+        overflow: hidden !important;
+        height: 100vh !important;
+    }
+
+    .content-area {
+        padding: 0 !important;
+        overflow: hidden !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Chat container - takes full height */
+    .chat-container {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+    .sidebar {
+        height: !important;
+    }
+    /* Sidebar */
+    .sidebar-chat {
+        width: 320px;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .create-message-btn {
+        margin: 16px;
+        padding: 10px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .create-message-btn:hover {
+        background-color: #2563eb;
+    }
+
+    .create-message-btn svg {
+        margin-right: 8px;
+    }
+
+    .rooms-title {
+        padding: 8px 16px;
+        font-weight: bold;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .rooms-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .room-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    .room-item:hover {
+        background-color: #f3f4f6;
+    }
+
+    .room-item.active {
+        background-color: #f3f4f6;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #d1d5db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .avatar-text {
+        font-weight: bold;
+        color: #4b5563;
+    }
+
+    .room-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .room-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .room-last-message {
+        font-size: 14px;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .room-time {
+        font-size: 12px;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    /* Main chat area */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    #chatRoom.active-chat {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
+        background: #f0f2f5;
+    }
+
+    .chat-header {
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        background-color: white;
+        flex-shrink: 0;
+    }
+
+    .chat-header-info {
+        margin-left: 12px;
+    }
+
+    .chat-header-name {
+        font-weight: 500;
+    }
+
+    .chat-header-participants {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    /* This is the key element - it will have its own scrollbar */
+    .chat-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0; /* Important for Firefox */
+    }
+
+    .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+    }
+
+    .empty-state svg {
+        margin-bottom: 16px;
+    }
+
+    .empty-state-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .message {
+        margin-bottom: 16px;
+        display: flex;
+        max-width: 70%;
+    }
+
+    .message.sent {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .message.received {
+        align-self: flex-start;
+    }
+
+    .message-content {
+        padding: 12px;
+        border-radius: 12px;
+        margin: 0 8px;
+    }
+
+    .message.sent .message-content {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .message.received .message-content {
+        background-color: #e5e7eb;
+    }
+
+    .message-time {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #9ca3af;
+    }
+
+    .message.sent .message-time {
+        color: #bfdbfe;
+        text-align: right;
+    }
+
+    .chat-input {
+        padding: 16px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        background-color: white;
+        flex-shrink: 0;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        margin-right: 8px;
+    }
+
+    .chat-input button {
+        padding: 10px 16px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .chat-input button:hover {
+        background-color: #2563eb;
+    }
+
+    .chat-input button:disabled {
+        background-color: #93c5fd;
+        cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal {
+        background-color: white;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+    }
+
+    .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .search-container {
+        position: relative;
+        margin-bottom: 16px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 10px 10px 36px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+    }
+
+    .users-list {
+        max-height: 320px;
+        overflow-y: auto;
+    }
+
+    .user-item {
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .user-item:hover {
+        background-color: #f3f4f6;
+    }
+
+    .user-name {
+        margin-left: 12px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .loading-indicator {
+        text-align: center;
+        padding: 16px;
+        color: #6b7280;
+    }
+
+    .error-message {
+        text-align: center;
+        padding: 16px;
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Sidebar -->
+    <div class="sidebar-chat">
+        <button class="create-message-btn" id="createMessageBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Tạo tin nhắn
+        </button>
+
+        <div class="rooms-title">Phòng chat</div>
+
+        <div class="rooms-list" id="roomsList">
+            <!-- Room items will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- Main chat area -->
+    <div class="chat-main">
+        <div id="emptyState" class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <div class="empty-state-title">Chọn một phòng chat để bắt đầu</div>
+            <div class="empty-state-description">Chọn một phòng chat từ danh sách bên trái để bắt đầu trò chuyện</div>
+        </div>
+
+        <div id="chatRoom" class="hidden">
+            <div class="chat-header" id="chatHeader">
+                <!-- Chat header will be added here dynamically -->
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+
+            <div class="chat-input">
+                <div class="attachment-buttons">
+                    <button type="button" id="fileButton" class="attachment-btn" title="Attach file">
+                        <!-- icon paperclip -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
+                    <button type="button" id="imageButton" class="attachment-btn" title="Attach image">
+                        <!-- icon image -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Preview attachments sẽ được JS chèn lên đây -->
+                <div class="attachment-preview"></div>
+
+                <!-- Hidden inputs để lưu ID file và image đã upload -->
+                <input type="hidden" id="attachmentIdInput" value="">
+                <input type="hidden" id="imageIdInput" value="">
+
+                <!-- Text input và nút gửi -->
+                <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+                <button id="sendButton" disabled>Gửi</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Create message modal -->
+<div id="createMessageModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Tạo tin nhắn mới</div>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="search-container">
+                <div class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm người dùng...">
+            </div>
+
+            <div class="users-list" id="usersList">
+                <!-- User items will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Biến toàn cục
+  let currentUser = null;
+  let rooms = [];
+  let selectedRoom = null;
+  let messages = [];
+  let socket = null;
+  let searchTimeout = null;
+  let pendingAttachment = null;
+  let pendingImage = null;
+
+  // DOM elements
+  const roomsList    = document.getElementById('roomsList');
+  const emptyState   = document.getElementById('emptyState');
+  const chatRoom     = document.getElementById('chatRoom');
+  const chatHeader   = document.getElementById('chatHeader');
+  const chatMessages = document.getElementById('chatMessages');
+  const messageInput = document.getElementById('messageInput');
+  const sendButton   = document.getElementById('sendButton');
+  const createMessageBtn   = document.getElementById('createMessageBtn');
+  const createMessageModal = document.getElementById('createMessageModal');
+  const closeModalBtn      = document.getElementById('closeModalBtn');
+  const searchInput        = document.getElementById('searchInput');
+  const usersList          = document.getElementById('usersList');
+
+  // Tạo hidden inputs lưu ID upload
+  const attachmentIdInput = document.createElement('input');
+  attachmentIdInput.type  = 'hidden';
+  attachmentIdInput.id    = 'attachmentIdInput';
+  const imageIdInput      = document.createElement('input');
+  imageIdInput.type       = 'hidden';
+  imageIdInput.id         = 'imageIdInput';
+  document.querySelector('.chat-input').append(attachmentIdInput, imageIdInput);
+
+  // Nhập ẩn file/image
+  const fileInput  = document.createElement('input');
+  fileInput.type   = 'file';
+  fileInput.classList.add('hidden');
+  document.body.appendChild(fileInput);
+
+  const imageInput = document.createElement('input');
+  imageInput.type  = 'file';
+  imageInput.accept= 'image/*';
+  imageInput.classList.add('hidden');
+  document.body.appendChild(imageInput);
+
+  // Lấy CSRF token
+  function getCsrfToken() {
+    const name = 'csrftoken=';
+    return document.cookie.split(';')
+      .map(c=>c.trim())
+      .find(c=>c.startsWith(name))
+      ?.substring(name.length) || '';
+  }
+
+  // Preview area
+  function ensurePreviewContainer() {
+    let preview = document.querySelector('.attachment-preview');
+    if (!preview) {
+      preview = document.createElement('div');
+      preview.className = 'attachment-preview';
+      document.querySelector('.chat-input').prepend(preview);
+    }
+    return preview;
+  }
+
+  function showAttachmentPreview(name) {
+    const preview = ensurePreviewContainer();
+    preview.innerHTML = `
+      <div class="attachment-item">
+        📎 ${name}
+        <span class="remove-btn">&times;</span>
+      </div>`;
+    preview.querySelector('.remove-btn').onclick = () => {
+      pendingAttachment = null;
+      attachmentIdInput.value = '';
+      preview.remove();
+    };
+  }
+
+  function showImagePreview(url) {
+    const preview = ensurePreviewContainer();
+    preview.innerHTML = `
+      <div class="attachment-item">
+        <img src="${url}" style="max-height:40px; margin-right:4px;" />
+        <span class="remove-btn">&times;</span>
+      </div>`;
+    preview.querySelector('.remove-btn').onclick = () => {
+      pendingImage = null;
+      imageIdInput.value = '';
+      preview.remove();
+    };
+  }
+
+  // Bắt sự kiện click vào icon
+  document.getElementById('fileButton').addEventListener('click',  ()=> fileInput.click());
+  document.getElementById('imageButton').addEventListener('click', ()=> imageInput.click());
+
+  // Upload file
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/api/upload/file/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {'X-CSRFToken': getCsrfToken()},
+        body: form
+      });
+      const data = await res.json();
+      if (res.ok) {
+        pendingAttachment = data.id;
+        attachmentIdInput.value = data.id;
+        showAttachmentPreview(data.name);
+        sendButton.disabled = false;
+      } else {
+        alert(data.error || 'Upload file thất bại');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Lỗi mạng khi upload file');
+    }
+    fileInput.value = '';
+  });
+
+  // Upload image
+  imageInput.addEventListener('change', async () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append('image', file);
+    try {
+      const res = await fetch('/api/upload/image/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {'X-CSRFToken': getCsrfToken()},
+        body: form
+      });
+      const data = await res.json();
+      if (res.ok) {
+        pendingImage = data.id;
+        imageIdInput.value = data.id;
+        showImagePreview(data.url);
+        sendButton.disabled = false;
+      } else {
+        alert(data.error || 'Upload image thất bại');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Lỗi mạng khi upload ảnh');
+    }
+    imageInput.value = '';
+  });
+
+  // Lấy current user
+  async function getCurrentUser() {
+    try {
+      const res = await fetch('/api/users/current/');
+      if (!res.ok) throw new Error();
+      const d = await res.json();
+      currentUser = {id: d.id, username: d.username};
+    } catch {
+      window.location.href = '/accounts/login/?next=' + window.location.pathname;
+    }
+  }
+
+  // Khởi tạo
+  async function init() {
+    roomsList.innerHTML = '<div class="loading-indicator">Đang tải...</div>';
+    await getCurrentUser();
+    try {
+      const res = await fetch('/api/rooms/');
+      if (!res.ok) throw new Error();
+      rooms = (await res.json()).rooms;
+      renderRooms();
+      setupEventListeners();
+    } catch {
+      roomsList.innerHTML = '<div class="error-message">Không thể kết nối.</div>';
+    }
+  }
+
+  function renderRooms() {
+    roomsList.innerHTML = '';
+    if (!rooms.length) {
+      roomsList.innerHTML = '<div class="text-center py-4 text-gray-500">Không có phòng chat</div>';
+      return;
+    }
+    rooms.forEach(r => {
+      const el = document.createElement('div');
+      el.className = `room-item ${selectedRoom?.id===r.id?'active':''}`;
+      el.dataset.roomId = r.id;
+
+      let avatar = r.is_private
+        ? `<span class="avatar-text">${r.participants.find(p=>p.id!==currentUser.id)?.username?.charAt(0)||r.name.charAt(0)}</span>`
+        : `<span class="avatar-text">${r.participants.find(p=>p.id!==currentUser.id)?.username?.charAt(0)||r.name.charAt(0)}</span>`;
+      el.innerHTML = `
+        <div class="avatar">${avatar}</div>
+        <div class="room-info">
+          <div class="room-name">${r.name}</div>
+          <div class="room-last-message">${r.last_message||''}</div>
+        </div>
+        <div class="room-time">${r.last_message_time||''}</div>`;
+      el.onclick = ()=>selectRoom(r);
+      roomsList.appendChild(el);
+    });
+  }
+
+  function setupEventListeners() {
+    messageInput.oninput = ()=> sendButton.disabled = !messageInput.value.trim();
+    messageInput.onkeydown = e=> {
+      if (e.key==='Enter' && !e.shiftKey && messageInput.value.trim()) {
+        e.preventDefault(); sendMessage();
+      }
+    };
+    sendButton.onclick = sendMessage;
+    createMessageBtn.onclick = ()=>{
+      renderUsers();
+      createMessageModal.classList.remove('hidden');
+    };
+    closeModalBtn.onclick = ()=> createMessageModal.classList.add('hidden');
+    searchInput.oninput = ()=>{
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(renderUsers, 300);
+    };
+  }
+
+  function connectWebSocket(roomId) {
+    // Đóng kết nối cũ nếu có
+    if (socket && socket.close) {
+        socket.close();
+    }
+
+    // Xác định protocol (ws hoặc wss)
+    const protocol = location.protocol==='https:'?'wss:':'ws:';
+
+    // Tạo kết nối WebSocket mới
+    socket = new WebSocket(`${protocol}//${location.host}/ws/chat/${roomId}/`);
+
+    // Xử lý sự kiện khi kết nối mở
+    socket.onopen    = ()=> console.log('WS mở');
+
+    // Xử lý sự kiện khi nhận tin nhắn
+    socket.onmessage = e=>{
+      const data = JSON.parse(e.data);
+      if (data.type!=='chat_message' || data.sender_id===currentUser.id) return;
+
+    // Tạo đối tượng tin nhắn mới và Thêm tin nhắn vào danh sách
+      addMessage({
+        id: data.message_id,
+        content: data.message,
+        sender: {id: data.sender_id, username: data.sender_name},
+        timestamp: data.timestamp,
+        attachment_url: data.attachment?.url||null,
+        attachment_name:data.attachment?.name||null,
+        image_url:      data.image?.url     ||null
+      });
+
+
+      updateRoomLastMessage(roomId, data.message, 'Vừa xong');
+    };
+    socket.onclose = ()=> console.log('WS đóng');
+    socket.onerror = e=> console.error('WS lỗi', e);
+  }
+
+  function selectRoom(room) {
+    selectedRoom = room;
+    renderRooms();
+    emptyState.classList.add('hidden');
+    chatRoom.classList.remove('hidden');
+    chatRoom.classList.add('active-chat');
+    renderChatHeader();
+    connectWebSocket(room.id);
+    fetchMessages(room.id);
+  }
+
+  function renderChatHeader() {
+
+    const other = selectedRoom.is_private
+      ? selectedRoom.participants.find(p=>p.id!==currentUser.id)
+      : selectedRoom.participants.find(p=>p.id!==currentUser.id)
+
+    const avatar = other
+      ? `<span class="avatar-text">${other.username.charAt(0)}</span>`
+      : `<span class="avatar-text">${other.username.charAt(0)}</span>`
+    chatHeader.innerHTML = `
+      <div class="avatar">${avatar}</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">${selectedRoom.name}</div>
+        <div class="chat-header-participants">${
+          selectedRoom.is_private?'Riêng tư':`${selectedRoom.participants.length} thành viên`
+        }</div>
+      </div>`;
+  }
+
+  async function fetchMessages(roomId) {
+    chatMessages.innerHTML = '<div class="loading-indicator">Đang tải tin nhắn...</div>';
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/messages/`);
+      if (!res.ok) throw new Error();
+      messages = (await res.json()).messages.map(m=>({
+        ...m, //// giữ nguyên tất cả thuộc tính ban đầu của m
+        sender: {id: m.sender.id, username: m.sender.username},
+        attachment_url: m.attachments.find(a=>a.type==='file')?.url||null,
+        attachment_name:m.attachments.find(a=>a.type==='file')?.name||null,
+        image_url:      m.attachments.find(a=>a.type==='image')?.url||null
+      }));
+      renderMessages();
+      
+    } catch {
+      chatMessages.innerHTML = '<div class="error-message">Không thể tải tin nhắn.</div>';
+    }
+  }
+
+  function renderMessages() {
+    chatMessages.innerHTML = '';
+    if (!messages.length) {
+      chatMessages.innerHTML = '<div class="text-center py-4 text-gray-500">Chưa có tin nhắn nào</div>';
+      return;
+    }
+    messages.forEach(m=> chatMessages.appendChild(createMessageElement(m)));
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function createMessageElement(message) {
+    const isSent = message.sender.id === currentUser.id;
+    const el = document.createElement('div');
+    el.className = `message ${isSent?'sent':'received'}`;
+
+    if (!isSent) {
+      const av = document.createElement('div');
+      av.className = 'avatar';
+      av.innerHTML = `<span class="avatar-text">${message.sender.username.charAt(0)}</span>`;
+      el.appendChild(av);
+    }
+
+    const content = document.createElement('div');
+    content.className = 'message-content';
+
+    let html = `<div>${message.content}</div>`;
+    if (message.image_url) {
+      html += `<img src="${message.image_url}" class="message-image"/>`;
+    }
+    if (message.attachment_url) {
+      html += `
+        <div class="message-attachment">
+          <a href="${message.attachment_url}" download>📎 ${message.attachment_name}</a>
+        </div>`;
+    }
+    html += `<div class="message-time">${new Date(message.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+
+    content.innerHTML = html;
+    el.appendChild(content);
+    return el;
+  }
+
+  function addMessage(m) {
+    if (!messages.length) chatMessages.innerHTML = '';
+    messages.push(m);
+    chatMessages.appendChild(createMessageElement(m));
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  function sendMessage() {
+  const text = messageInput.value.trim();
+  const hasAttachment = attachmentIdInput.value.trim() !== '';
+  const hasImage = imageIdInput.value.trim() !== '';
+  const isSocketOpen = socket.readyState === WebSocket.OPEN;
+
+  // Không gửi nếu không có nội dung, file hay ảnh, hoặc chưa chọn phòng, hoặc socket chưa kết nối
+  if (!isSocketOpen || !selectedRoom || (!text && !hasAttachment && !hasImage)) return;
+
+  // Tạo payload
+  const payload = {
+    type: 'chat_message',
+    message: text || '',                // Nếu có text thì gửi, không thì null
+    attachment_id: hasAttachment ? attachmentIdInput.value : null,
+    image_id: hasImage ? imageIdInput.value : null
+  };
+
+  socket.send(JSON.stringify(payload));
+
+  // Hiển thị tạm thời tin nhắn
+  addMessage({
+    id: 'temp-' + Date.now(),
+    content: text,
+    sender: currentUser,
+    timestamp: new Date().toISOString(),
+    attachment_url: hasAttachment ? `/media/${attachmentIdInput.value}` : null,
+    attachment_name: hasAttachment ? attachmentIdInput.value.split('/').pop() : null,
+    image_url: hasImage ? document.querySelector('.attachment-preview img')?.src : null
+  });
+
+  // Cập nhật tin nhắn cuối cùng của phòng
+  updateRoomLastMessage(selectedRoom.id, text || (hasAttachment ? '[File đính kèm]' : '[Ảnh]'), 'Vừa xong');
+
+  // Reset form, trạng thái
+  messageInput.value = '';
+  sendButton.disabled = true;
+  pendingAttachment = null;
+  pendingImage = null;
+  attachmentIdInput.value = '';
+  imageIdInput.value = '';
+  document.querySelector('.attachment-preview')?.remove();
+}
+
+
+  function updateRoomLastMessage(id, msg, time) {
+    const i = rooms.findIndex(r=>r.id===id);
+    if (i>=0) {
+      rooms[i].last_message = msg;
+      rooms[i].last_message_time = time;
+      renderRooms();
+    }
+  }
+
+  async function renderUsers() {
+    const q = searchInput.value.trim();
+    usersList.innerHTML = '<div class="loading-indicator">Đang tìm...</div>';
+    try {
+
+      // Gọi API tìm kiếm người dùng
+      const res = await fetch(`/api/users/search/?q=${encodeURIComponent(q)}`);
+      
+      if (!res.ok) throw new Error();
+      const filteredUsers = (await res.json()).users;
+      usersList.innerHTML = '';
+      if (!filteredUsers.length) {
+        usersList.innerHTML = '<div class="text-center py-4 text-gray-500">Không tìm thấy</div>';
+        return;
+      }
+      filteredUsers.forEach(user=>{
+        const el = document.createElement('div');
+        el.className = 'user-item';
+        el.innerHTML = `
+          <div class="avatar"><span class="avatar-text">${user.username.charAt(0)}</span></div>
+          <div class="user-name">${user.username}</div>`;
+        el.onclick = ()=> createPrivateRoom(user);
+        usersList.appendChild(el);
+      });
+    } catch {
+      usersList.innerHTML = '<div class="error-message">Lỗi tìm kiếm</div>';
+    }
+  }
+
+  async function createPrivateRoom(user) {
+    usersList.innerHTML = '<div class="loading-indicator">Đang tạo...</div>';
+    try {
+
+      // Gọi API để tạo phòng chat riêng tư
+      const res = await fetch('/api/rooms/create_private/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
+        body: JSON.stringify({user_id:user.id})
+      });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+
+      // Cập nhật danh sách phòng chat
+      await refreshRooms();
+
+      const newRoom = rooms.find(room=>room.id===data.room_id);
+
+      if (newRoom) selectRoom(newRoom);
+      // Đóng modal
+      createMessageModal.classList.add('hidden');
+    } catch {
+      usersList.innerHTML = '<div class="error-message">Tạo thất bại</div>';
+      setTimeout(renderUsers,3000);
+    }
+  }
+
+  // Làm mới danh sách phòng chat
+  async function refreshRooms() {
+    try {
+
+      const res = await fetch('/api/rooms/');
+
+      if (res.ok) {
+        rooms = (await res.json()).rooms;
+        renderRooms();
+      }
+    } catch (error){
+      console.error('Lỗi khi làm mới danh sách phòng chat:', error);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+{% endblock %}
+
+
+{% block body_class %}no-scroll{% endblock %}
