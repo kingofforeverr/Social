@@ -30,8 +30,8 @@ SECRET_KEY = 'django-insecure-j83&r0#^==0a*zcc9*y@b+nck1ivf%!wkg*oi8p#o4^kw#w%sv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = ['social-aaux.onrender.com']
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['social-aaux.onrender.com']
 CSRF_TRUSTED_ORIGINS = ['https://social-aaux.onrender.com']
 
 ASGI_APPLICATION = 'DuAnNhom.asgi.application'
