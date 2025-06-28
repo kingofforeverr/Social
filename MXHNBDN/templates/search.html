@@ -148,63 +148,52 @@
     {% endif %}
 </div>
 <script>
-    function toggleComments(id) {
-      document.getElementById(id).classList.toggle('hidden');
-    }
-    function loadMoreComments(id) {
-      // AJAX load thêm
-    }
- function loadMoreComments(baiVietId) {
-          // Implement AJAX để tải thêm bình luận
-          console.log(Tải thêm bình luận cho bài viết ${baiVietId});
-      }
-    // Xử lý cảm xúc (like/dislike)
-      function xuLyCamXuc(baiVietId, loaiCamXuc) {
-          fetch('{% url "xu_ly_cam_xuc" %}', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  'X-CSRFToken': '{{ csrf_token }}'
-              },
-              body: bai_viet_id=${baiVietId}&loai_cam_xuc=${loaiCamXuc}
-          })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  // Cập nhật số lượt thích và không thích
-                  document.getElementById(like-count-${baiVietId}).textContent = data.so_luot_thich;
-                  document.getElementById(dislike-count-${baiVietId}).textContent = data.so_luot_khong_thich;
+function toggleComments(id) {
+    document.getElementById(id).classList.toggle('hidden');
+}
 
-                  // Cập nhật trạng thái nút
-                  const likeBtn = document.getElementById(like-btn-${baiVietId});
-                  const dislikeBtn = document.getElementById(dislike-btn-${baiVietId});
+function loadMoreComments(baiVietId) {
+    // Implement AJAX để tải thêm bình luận
+    console.log(`Tải thêm bình luận cho bài viết ${baiVietId}`);
+}
 
-                  if (data.action === 'removed') {
-                      if (loaiCamXuc) {
-                          likeBtn.classList.remove('active');
-                      } else {
-                          dislikeBtn.classList.remove('active');
-                      }
-                  } else if (data.action === 'added') {
-                      if (loaiCamXuc) {
-                          likeBtn.classList.add('active');
-                          dislikeBtn.classList.remove('active');
-                      } else {
-                          dislikeBtn.classList.add('active');
-                          likeBtn.classList.remove('active');
-                      }
-                  } else if (data.action === 'changed') {
-                      if (loaiCamXuc) {
-                          likeBtn.classList.add('active');
-                          dislikeBtn.classList.remove('active');
-                      } else {
-                          dislikeBtn.classList.add('active');
-                          likeBtn.classList.remove('active');
-                      }
-                  }
-              }
-          })
-          .catch(error => console.error('Error:', error));
-      }
+// Xử lý cảm xúc (like/dislike)
+function xuLyCamXuc(baiVietId, loaiCamXuc) {
+    fetch('{% url "xu_ly_cam_xuc" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `bai_viet_id=${baiVietId}&loai_cam_xuc=${loaiCamXuc}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`like-count-${baiVietId}`).textContent = data.so_luot_thich;
+            document.getElementById(`dislike-count-${baiVietId}`).textContent = data.so_luot_khong_thich;
+
+            const likeBtn = document.getElementById(`like-btn-${baiVietId}`);
+            const dislikeBtn = document.getElementById(`dislike-btn-${baiVietId}`);
+
+            if (data.action === 'removed') {
+                if (loaiCamXuc) {
+                    likeBtn.classList.remove('active');
+                } else {
+                    dislikeBtn.classList.remove('active');
+                }
+            } else if (data.action === 'added' || data.action === 'changed') {
+                if (loaiCamXuc) {
+                    likeBtn.classList.add('active');
+                    dislikeBtn.classList.remove('active');
+                } else {
+                    dislikeBtn.classList.add('active');
+                    likeBtn.classList.remove('active');
+                }
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
 {% endblock %}
